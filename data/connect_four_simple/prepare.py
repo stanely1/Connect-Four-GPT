@@ -12,11 +12,12 @@ import numpy as np
 # read data
 input_file_path = os.path.join(os.path.dirname(__file__), 'input.txt')
 with open(input_file_path, 'r') as f:
-    # data = f.read().strip().split('\n')
-    data = f.read().replace('\n', '')
-# print(f"length of dataset in games: {len(data):,}")
+    data = f.read().strip().split('\n')
+print(f"length of dataset in games: {len(data):,}")
 print(f"length of dataset in characters: {len(''.join(data)):,}")
-# print(f"max game length: {max(len(d) for d in data)}")
+
+max_game_len = max(len(d) for d in data)
+print(f"max game length: {max_game_len}")
 
 # vocab
 chars = '0123456ABDS'
@@ -35,18 +36,24 @@ def decode(l):
 # create the train and test splits
 n = len(data)
 split_n = int(n*0.9)
-while data[split_n] != 'S':
-    split_n -= 1
 train_data = data[:split_n]
 val_data = data[split_n:]
 
 # encode both to integers
-# train_ids = [encode(g) for g in train_data]
-# val_ids = [encode(g) for g in val_data]
-train_ids = encode(train_data)
-val_ids = encode(val_data)
-print(f"train has {len(train_ids):,} tokens")
-print(f"val has {len(val_ids):,} tokens")
+train_ids = [encode(g) for g in train_data]
+val_ids = [encode(g) for g in val_data]
+print(f"train has {len(train_ids):,} games ({sum(len(g) for g in train_ids)} tokens)")
+print(f"val has {len(val_ids):,} games ({sum(len(g) for g in val_ids)} tokens)")
+
+# align length of each game to max - duplicate last token
+# using max_game_len + 1 to simplify training:
+# e.g:
+# original: S1123D
+# extended: S1123DDD
+# x: S1123DD (game[:-1])
+# y: 1123DDD (game[1:])
+for g in train_ids: g += [g[-1]] * (max_game_len + 1 - len(g))
+for g in val_ids: g += [g[-1]] * (max_game_len + 1 - len(g))
 
 # export to bin files
 train_ids = np.array(train_ids, dtype=np.uint16)
@@ -55,16 +62,22 @@ train_ids.tofile(os.path.join(os.path.dirname(__file__), 'train.bin'))
 val_ids.tofile(os.path.join(os.path.dirname(__file__), 'val.bin'))
 
 # save the meta information as well, to help us encode/decode later
+eos_chars = 'ABD'
 meta = {
     'vocab_size': vocab_size,
     'itos': itos,
     'stoi': stoi,
+    'block_size': max_game_len,
+    'eos_token_ids': encode(eos_chars),
+    'start_token': 'S',
 }
 with open(os.path.join(os.path.dirname(__file__), 'meta.pkl'), 'wb') as f:
     pickle.dump(meta, f)
 
+# length of dataset in games: 20,000
 # length of dataset in characters: 738,699
+# max game length: 44
 # all the unique characters: 0123456ABDS
 # vocab size: 11
-# train has 664,824 tokens
-# val has 73,875 tokens
+# train has 18,000 games (664297 tokens)
+# val has 2,000 games (74402 tokens)

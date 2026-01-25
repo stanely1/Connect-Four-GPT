@@ -9,7 +9,8 @@ https://github.com/huggingface/transformers/blob/main/src/transformers/models/gp
 
 import math
 import inspect
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import List
 
 import torch
 import torch.nn as nn
@@ -114,6 +115,7 @@ class GPTConfig:
     n_embd: int = 768
     dropout: float = 0.0
     bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
+    eos_token_ids: List[int] = field(default_factory=list) # token ids that should be interpreted as EOS
 
 class GPT(nn.Module):
 
@@ -326,5 +328,7 @@ class GPT(nn.Module):
             idx_next = torch.multinomial(probs, num_samples=1)
             # append sampled index to the running sequence and continue
             idx = torch.cat((idx, idx_next), dim=1)
+            # terminate generation when EOS generated
+            if idx_next.item() in self.config.eos_token_ids: break
 
         return idx
