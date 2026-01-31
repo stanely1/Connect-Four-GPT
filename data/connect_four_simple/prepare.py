@@ -25,9 +25,10 @@ vocab_size = len(chars)
 print("all the unique characters:", chars)
 print(f"vocab size: {vocab_size:,}")
 
-# create a mapping from characters to integers
+# create a mapping from characters to integers and characters to moves
 stoi = { ch:i for i,ch in enumerate(chars) }
 itos = { i:ch for i,ch in enumerate(chars) }
+stom = { ch:ch for ch in chars}
 def encode(s):
     return [stoi[c] for c in s] # encoder: take a string, output a list of integers
 def decode(l):
@@ -67,6 +68,7 @@ meta = {
     'vocab_size': vocab_size,
     'itos': itos,
     'stoi': stoi,
+    'stom': stom,
     'block_size': max_game_len,
     'eos_token_ids': encode(eos_chars),
     'start_token': 'S',
