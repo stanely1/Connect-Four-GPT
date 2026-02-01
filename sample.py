@@ -62,10 +62,12 @@ if load_meta:
     print(f"Loading meta from {meta_path}...")
     with open(meta_path, 'rb') as f:
         meta = pickle.load(f)
-    # TODO want to make this more general to arbitrary encoder/decoder schemes
-    stoi, itos = meta['stoi'], meta['itos']
-    encode = lambda s: [stoi[c] for c in s]
-    decode = lambda l: ''.join([itos[i] for i in l])
+
+    stoi, itos, separator = meta['stoi'], meta['itos'], meta['separator']
+    split = lambda s: list(s) if separator == '' else s.split(separator)
+    encode = lambda s: [stoi[c] for c in split(s)]
+    decode = lambda l: separator.join(itos[i] for i in l)
+
     max_new_tokens = meta['block_size']
     start = meta['start_token']
 else:
