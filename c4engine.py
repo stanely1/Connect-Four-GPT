@@ -9,6 +9,7 @@ class C4Engine:
     PLAYERS = 'AB'
     DRAW = 'D'
     RESULT_TYPES = PLAYERS + DRAW
+    MOVES = list(START + RESULT_TYPES) + [str(i) for i in range(WIDTH)]
 
     def __init__(self, start_seq: str = ''):
         self.reset()
@@ -31,7 +32,14 @@ class C4Engine:
         return self._result
 
 
+    def player_to_move(self) -> str:
+        return C4Engine.PLAYERS[self._turn]
+
+
     def is_legal_move(self, move: str) -> bool:
+        if move not in C4Engine.MOVES:
+            return False
+
         if not self._game_started:
             return move == C4Engine.START
 
@@ -63,7 +71,8 @@ class C4Engine:
             if row[x] == C4Engine.EMPTY:
                 row[x] = C4Engine.PLAYERS[self._turn]
                 break
-        self._result = self._get_result(x, C4Engine.HEIGHT - y)
+        self._last_y = C4Engine.HEIGHT - y
+        self._result = self._get_result(x, self._last_y)
         self._turn = 1 - self._turn
 
         return True

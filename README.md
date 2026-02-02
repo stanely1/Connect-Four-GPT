@@ -28,6 +28,8 @@ python data/connect_four_simple/prepare.py
 
 This creates a `train.bin` and `val.bin` in that data directory. This data will be used to train the model.
 
+## Train a model
+
 To train a model run:
 
 ```sh
@@ -38,6 +40,15 @@ When the model is ready, you can use `sample.py` script to draw samples from it:
 
 ```sh
 python sample.py --out_dir=out-connect_four_simple
+```
+
+## Interactive game
+
+You can run `play.py` to interactively play a game with trained model.
+You need to provide an output directory containing the model.
+Example usage:
+```
+python play.py out-connect-four-simple
 ```
 
 ## Experiments
